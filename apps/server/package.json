@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "bull": "^4.16.5",
     "cors": "^2.8.5",
     "express": "^4.21.2"
   },
