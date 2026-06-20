@@ -1,0 +1,12 @@
+{
+  "extends": "@jetpaas/typescript-config/react.json",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "paths": {
+      "#/*": ["./src/*"],
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client"],
+    "noUncheckedSideEffectImports": true
+  }
+}
