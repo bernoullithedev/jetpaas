@@ -2,12 +2,15 @@ import { createFileRoute } from '@tanstack/react-router'
 import DeploymentForm from '#/components/DeploymentForm'
 import DeploymentList from '#/components/DeploymentList'
 import { useDeployments } from '#/lib/useDeployments'
+import { useEffect, useState } from 'react'
+import type { Deployment } from '#/lib/deployments'
 
 export const Route = createFileRoute('/')({ component: DashboardPage })
 
 function DashboardPage() {
   const { deployments, selectedId, setSelectedId, addDeployment } =
     useDeployments()
+  const [deploymentsData, setDeploymentsData] = useState<Deployment[]>([]);
 
   const activeCount = deployments.filter(
     (d) =>
@@ -17,6 +20,18 @@ function DashboardPage() {
   ).length
 
   const runningCount = deployments.filter((d) => d.status === 'running').length
+
+  useEffect(() => {
+    const eventSource = new EventSource(`http://localhost:4000/`);
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Deployment data:", data);
+      setDeploymentsData(() => [data]);
+    }
+    return () => {
+      eventSource.close();
+    }
+  }, []);
 
   return (
     <main className="demo-page demo-page-wide px-4 pb-10">
@@ -48,7 +63,7 @@ function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
         <DeploymentForm onSubmit={addDeployment} />
         <DeploymentList
-          deployments={deployments}
+          deployments={deploymentsData}
           selectedId={selectedId}
           onSelect={setSelectedId}
         />

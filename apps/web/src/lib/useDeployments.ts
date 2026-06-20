@@ -24,10 +24,31 @@ export function useDeployments() {
   )
   const logIndices = useRef<Record<string, number>>({})
 
-  const addDeployment = useCallback((source: DeploymentSource) => {
-    const deployment = createDeployment(source)
-    setDeployments((current) => [deployment, ...current])
-    setSelectedId(deployment.id)
+  const addDeployment = useCallback(async (source: DeploymentSource) => {
+    // const deployment = createDeployment(source)
+    // setDeployments((current) => [deployment, ...current])
+    // setSelectedId(deployment.id)
+    console.log(source);
+    if (source.type === 'git') {
+      const response = await fetch(`http://localhost:4000/deploy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ repository: source.url }),
+      })
+    } else {
+      const response = await fetch(`http://localhost:4000/deploy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename: source.filename }),
+      })
+    }
+    // const data = await response.json()
+    // setDeployments((current) => [data, ...current])
+    // setSelectedId(data.id)
   }, [])
 
   useEffect(() => {
