@@ -51,4 +51,4 @@ Hard requirements from the Brimble brief:
 2. Live log streaming over SSE or WebSocket (not polling)
 3. Railpack builds (no handwritten Dockerfiles for user apps)
 4. Caddy as single ingress point
-5. Deploy something on Brimble + honest feedback (optional for this learning fork)
+
