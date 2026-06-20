@@ -14,6 +14,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@t3-oss/env-core": "^0.13.11",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
@@ -24,7 +25,8 @@
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@jetpaas/typescript-config": "workspace:*",

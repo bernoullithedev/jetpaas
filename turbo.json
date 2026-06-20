@@ -1,5 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env", "**/.env.*"],
+  "globalPassThroughEnv": [
+    "NODE_ENV",
+    "PORT",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "REDIS_PASSWORD",
+    "VITE_API_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

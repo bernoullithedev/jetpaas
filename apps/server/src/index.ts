@@ -1,12 +1,31 @@
+import { env } from "./env.js";
+import { Queue } from "bullmq";
 import cors from "cors";
 import express from "express";
 
+const redis = {
+  host: env.REDIS_HOST,
+  port: env.REDIS_PORT,
+  password: env.REDIS_PASSWORD,
+  tls: {},
+};
+
 const app = express();
-const PORT = process.env.PORT ?? 4000;
+const PORT = env.PORT;
 
 app.use(cors());
 app.use(express.json());
 
+
+const deployQueue = new Queue("deploy", { connection: redis });
+
+deployQueue.add("deploy", { repository: "https://github.com/jetpaas/api-gateway" });
+
+app.post("/deploy", (req, res) => {
+  const { repository } = req.body;
+  deployQueue.add("deploy", { repository });
+  res.json({ message: "Deploying..." });
+});
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
