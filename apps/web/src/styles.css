@@ -1,5 +1,5 @@
 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -27,6 +27,11 @@
   --link-bg-hover: rgba(255, 255, 255, 0.9);
   --hero-a: rgba(79, 184, 178, 0.36);
   --hero-b: rgba(47, 106, 74, 0.2);
+  --status-pending: #8a7b4a;
+  --status-building: #328f97;
+  --status-deploying: #2f6a4a;
+  --status-running: #2a8f5c;
+  --status-failed: #c44747;
 }
 
 :root[data-theme="dark"] {
@@ -49,6 +54,11 @@
   --link-bg-hover: rgba(24, 44, 49, 0.8);
   --hero-a: rgba(96, 215, 207, 0.18);
   --hero-b: rgba(110, 200, 154, 0.12);
+  --status-pending: #c4b06a;
+  --status-building: #60d7cf;
+  --status-deploying: #6ec89a;
+  --status-running: #7ee0a8;
+  --status-failed: #f07171;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,6 +82,11 @@
     --link-bg-hover: rgba(24, 44, 49, 0.8);
     --hero-a: rgba(96, 215, 207, 0.18);
     --hero-b: rgba(110, 200, 154, 0.12);
+    --status-pending: #c4b06a;
+    --status-building: #60d7cf;
+    --status-deploying: #6ec89a;
+    --status-running: #7ee0a8;
+    --status-failed: #f07171;
   }
 }
 
@@ -460,5 +475,42 @@ a {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.log-terminal {
+  background: color-mix(in oklab, #0d1618 88%, var(--chip-bg) 12%);
+}
+
+.log-scroll {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 24%),
+    color-mix(in oklab, #0a1214 92%, var(--chip-bg) 8%);
+}
+
+.log-line + .log-line {
+  margin-top: 0.15rem;
+}
+
+.log-dot {
+  display: inline-block;
+  height: 0.55rem;
+  width: 0.55rem;
+  border-radius: 999px;
+}
+
+.log-dot-red {
+  background: #ff5f57;
+}
+
+.log-dot-amber {
+  background: #febc2e;
+}
+
+.log-dot-green {
+  background: #28c840;
+}
+
+.font-mono {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 

@@ -1,31 +1,58 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react';
+import DeploymentForm from '#/components/DeploymentForm'
+import DeploymentList from '#/components/DeploymentList'
+import { useDeployments } from '#/lib/useDeployments'
 
-export const Route = createFileRoute('/')({ component: HomePage })
+export const Route = createFileRoute('/')({ component: DashboardPage })
 
-function HomePage() {
-  const [message, setMessage] = useState<string[]>([]);
+function DashboardPage() {
+  const { deployments, selectedId, setSelectedId, addDeployment } =
+    useDeployments()
 
-  useEffect(() => {
-    const eventSource = new EventSource("http://localhost:4000/");
-    eventSource.onmessage = (event) => {
-      console.log(event.data);
-      setMessage([...message, event.data]);
-    };
-  }, []);
-    return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">Jetpaas</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          SSE TESTING
-        </h1>
-       {message.map((message) => (
-        <p className="text-base text-[var(--sea-ink-soft)]">{message}</p>
-       ))}
-      </section>
+  const activeCount = deployments.filter(
+    (d) =>
+      d.status === 'pending' ||
+      d.status === 'building' ||
+      d.status === 'deploying',
+  ).length
+
+  const runningCount = deployments.filter((d) => d.status === 'running').length
+
+  return (
+    <main className="demo-page demo-page-wide px-4 pb-10">
+      <header className="mb-8 pt-6 rise-in">
+        <p className="island-kicker mb-2">Jetpaas</p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="display-title m-0 text-4xl font-bold tracking-tight text-[var(--sea-ink)] sm:text-5xl">
+              Deployments
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--sea-ink-soft)]">
+              Ship from Git or upload an archive. Monitor build output and rollout
+              status in one place.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="demo-pill">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--status-running)]" />
+              {runningCount} running
+            </span>
+            <span className="demo-pill">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--status-building)]" />
+              {activeCount} in progress
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+        <DeploymentForm onSubmit={addDeployment} />
+        <DeploymentList
+          deployments={deployments}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+        />
+      </div>
     </main>
   )
 }
