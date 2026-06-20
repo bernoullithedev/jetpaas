@@ -3,6 +3,7 @@ node_modules
 .git
 .turbo
 **/.turbo
+out
 dist
 **/dist
 .output
@@ -16,3 +17,5 @@ dist
 *.log
 coverage
 .DS_Store
+apps/web/node_modules
+apps/server/node_modules
