@@ -11,6 +11,7 @@ export const env = createEnv({
     REDIS_HOST: z.string().min(1),
     REDIS_PORT: z.coerce.number(),
     REDIS_PASSWORD: z.string().min(1),
+    CORS_ORIGIN: z.string().url().default("http://localhost:3000"),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

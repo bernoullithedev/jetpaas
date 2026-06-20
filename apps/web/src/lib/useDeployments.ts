@@ -1,159 +1,88 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  createDeployment,
-  failureLog,
-  formatTime,
-  generateImageTag,
-  generateLiveUrl,
-  getNextStatus,
-  INITIAL_DEPLOYMENTS,
-  nextLogLine,
-  statusDurationMs,
-  statusTransitionLog,
-  type Deployment,
-  type DeploymentSource,
-} from '#/lib/deployments'
+import { env } from '#/env'
+import { useCallback, useEffect, useState } from 'react'
+import type { Deployment, DeploymentSource } from '#/lib/deployments'
 
-const LOG_INTERVAL_MS = 900
-const FAIL_CHANCE = 0.08
+const API_URL = env.VITE_API_URL
+
+type ApiDeployment = {
+  id: string
+  name: string
+  source: DeploymentSource
+  status: Deployment['status']
+  imageTag: string | null
+  liveUrl: string | null
+  createdAt: string
+  logs?: string[]
+}
+
+function apiDeploymentToDeployment(record: ApiDeployment): Deployment {
+  return {
+    id: record.id,
+    name: record.name,
+    source: record.source,
+    status: record.status,
+    imageTag: record.imageTag,
+    liveUrl: record.liveUrl,
+    createdAt: new Date(record.createdAt).getTime(),
+    logs: record.logs ?? [],
+  }
+}
 
 export function useDeployments() {
-  const [deployments, setDeployments] = useState<Deployment[]>(INITIAL_DEPLOYMENTS)
-  const [selectedId, setSelectedId] = useState<string | null>(
-    INITIAL_DEPLOYMENTS[0]?.id ?? null,
-  )
-  const logIndices = useRef<Record<string, number>>({})
-
-  const addDeployment = useCallback(async (source: DeploymentSource) => {
-    // const deployment = createDeployment(source)
-    // setDeployments((current) => [deployment, ...current])
-    // setSelectedId(deployment.id)
-    console.log(source);
-    if (source.type === 'git') {
-      const response = await fetch(`http://localhost:4000/deploy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ repository: source.url }),
-      })
-    } else {
-      const response = await fetch(`http://localhost:4000/deploy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ filename: source.filename }),
-      })
-    }
-    // const data = await response.json()
-    // setDeployments((current) => [data, ...current])
-    // setSelectedId(data.id)
-  }, [])
+  const [deployments, setDeployments] = useState<Deployment[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
-    const cleanups: Array<() => void> = []
+    let cancelled = false
 
-    for (const deployment of deployments) {
-      if (deployment.status === 'running' || deployment.status === 'failed') {
-        continue
-      }
+    async function loadDeployments() {
+      const response = await fetch(`${API_URL}/api/deployments`)
+      if (!response.ok || cancelled) return
 
-      const phaseKey = `${deployment.id}:${deployment.status}`
-      if (!(phaseKey in logIndices.current)) {
-        logIndices.current[phaseKey] = 0
-      }
-
-      const logInterval = setInterval(() => {
-        setDeployments((current) => {
-          const active = current.find((item) => item.id === deployment.id)
-          if (
-            !active ||
-            active.status === 'running' ||
-            active.status === 'failed'
-          ) {
-            return current
-          }
-
-          const index = logIndices.current[phaseKey] ?? 0
-          const line = nextLogLine(active.status, index)
-          if (!line) return current
-
-          logIndices.current[phaseKey] = index + 1
-          return current.map((item) =>
-            item.id === deployment.id
-              ? { ...item, logs: [...item.logs, line] }
-              : item,
-          )
-        })
-      }, LOG_INTERVAL_MS)
-
-      const statusTimer = setTimeout(() => {
-        setDeployments((current) => {
-          const active = current.find((item) => item.id === deployment.id)
-          if (!active || active.status !== deployment.status) {
-            return current
-          }
-
-          const shouldFail =
-            active.status === 'deploying' && Math.random() < FAIL_CHANCE
-
-          if (shouldFail) {
-            return current.map((item) =>
-              item.id === deployment.id
-                ? {
-                    ...item,
-                    status: 'failed' as const,
-                    logs: [...item.logs, failureLog()],
-                  }
-                : item,
-            )
-          }
-
-          const next = getNextStatus(active.status)
-          if (!next) return current
-
-          const transitionLine = statusTransitionLog(active.status, next)
-          const liveUrl = next === 'running' ? generateLiveUrl(active.name) : null
-          const extraLogs: string[] = [transitionLine]
-
-          if (liveUrl) {
-            extraLogs.push(`[${formatTime()}] Live at ${liveUrl}`)
-          }
-
-          return current.map((item) =>
-            item.id === deployment.id
-              ? {
-                  ...item,
-                  status: next,
-                  imageTag:
-                    next === 'running'
-                      ? generateImageTag(item.id)
-                      : item.imageTag,
-                  liveUrl: liveUrl ?? item.liveUrl,
-                  logs: [...item.logs, ...extraLogs],
-                }
-              : item,
-          )
-        })
-      }, statusDurationMs(deployment.status))
-
-      cleanups.push(() => {
-        clearInterval(logInterval)
-        clearTimeout(statusTimer)
-      })
+      const data = (await response.json()) as { deployments: ApiDeployment[] }
+      const next = data.deployments.map(apiDeploymentToDeployment)
+      setDeployments(next)
+      setSelectedId((current) => current ?? next[0]?.id ?? null)
     }
+
+    void loadDeployments()
+
+    const eventSource = new EventSource(`${API_URL}/api/deployments/events`)
+
+    eventSource.addEventListener('snapshot', (event) => {
+      const payload = JSON.parse(event.data) as { deployments: ApiDeployment[] }
+      const next = payload.deployments.map(apiDeploymentToDeployment)
+      setDeployments(next)
+      setSelectedId((current) => current ?? next[0]?.id ?? null)
+    })
 
     return () => {
-      for (const cleanup of cleanups) {
-        cleanup()
-      }
+      cancelled = true
+      eventSource.close()
     }
-  }, [
-    deployments
-      .map((deployment) => `${deployment.id}:${deployment.status}`)
-      .join('|'),
-  ])
+  }, [])
+
+  const addDeployment = useCallback(async (source: DeploymentSource) => {
+    const response = await fetch(`${API_URL}/api/deployments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        source.type === 'git'
+          ? { repository: source.url }
+          : { filename: source.filename },
+      ),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to create deployment')
+    }
+
+    const data = (await response.json()) as { deployment: ApiDeployment }
+    const deployment = apiDeploymentToDeployment(data.deployment)
+
+    setDeployments((current) => [deployment, ...current])
+    setSelectedId(deployment.id)
+  }, [])
 
   return {
     deployments,

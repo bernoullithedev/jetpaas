@@ -101,7 +101,7 @@ export default function DeploymentForm({ onSubmit }: DeploymentFormProps) {
               />
             </div>
             <p className="mt-2 text-xs text-[var(--sea-ink-soft)]">
-              Mock upload only — file is not sent anywhere.
+              Upload support is wired in the API; file transfer lands in a later milestone (see TODO.md).
             </p>
           </label>
         )}
