@@ -3,11 +3,13 @@ import { Queue } from "bullmq";
 import cors from "cors";
 import express from "express";
 
+const useTls = !["localhost", "127.0.0.1", "redis"].includes(env.REDIS_HOST);
+
 const redis = {
   host: env.REDIS_HOST,
   port: env.REDIS_PORT,
   password: env.REDIS_PASSWORD,
-  tls: {},
+  ...(useTls ? { tls: {} } : {}),
 };
 
 const app = express();

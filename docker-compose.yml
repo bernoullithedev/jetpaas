@@ -1,0 +1,28 @@
+# Jetpaas dev infrastructure — Redis for BullMQ.
+#
+# Quick start (recommended):
+#   1. docker compose up -d
+#   2. cp apps/server/.env.example apps/server/.env   # if you have no server env yet
+#   3. cp apps/web/.env.example apps/web/.env         # if you have no web env yet
+#   4. pnpm install && pnpm dev
+#
+# Apps run locally via pnpm for fast HMR; only Redis runs in Docker.
+# Server env must use REDIS_HOST=localhost (published port) and REDIS_PASSWORD below.
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass jetpaas-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "jetpaas-dev", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

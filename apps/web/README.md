@@ -2,12 +2,15 @@ Welcome to your new TanStack Start app!
 
 # Getting Started
 
-To run this application:
+From the monorepo root, start Redis (required by the API server), then run the apps:
 
 ```bash
+docker compose up -d
 pnpm install
 pnpm dev
 ```
+
+Copy `apps/server/.env.example` and `apps/web/.env.example` if you do not have local env files yet.
 
 # Building For Production
 
