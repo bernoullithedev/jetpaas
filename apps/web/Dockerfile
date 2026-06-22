@@ -28,10 +28,12 @@ RUN addgroup --system --gid 1001 nodejs \
 USER jetpaas
 COPY --from=builder --chown=jetpaas:nodejs /app/apps/web/dist ./apps/web/dist
 COPY --from=builder --chown=jetpaas:nodejs /app/apps/web/package.json ./apps/web/package.json
-COPY --from=builder --chown=jetpaas:nodejs /app/apps/web/vite.config.ts ./apps/web/vite.config.ts
+COPY --from=builder --chown=jetpaas:nodejs /app/apps/web/server.mjs ./apps/web/server.mjs
 COPY --from=builder --chown=jetpaas:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=jetpaas:nodejs /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=builder --chown=jetpaas:nodejs /app/package.json ./package.json
 WORKDIR /app/apps/web
 EXPOSE 3000
-CMD ["pnpm", "exec", "vite", "preview", "--host", "0.0.0.0", "--port", "3000"]
+ENV HOST=0.0.0.0
+ENV PORT=3000
+CMD ["node", "server.mjs"]
