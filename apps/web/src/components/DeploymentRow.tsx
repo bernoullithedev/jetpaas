@@ -3,6 +3,7 @@ import LogStream from '#/components/LogStream'
 import StatusBadge from '#/components/StatusBadge'
 import type { Deployment } from '#/lib/deployments'
 import { formatRelativeTime, sourceLabel } from '#/lib/deployments'
+import { useDeploymentLogs } from '#/lib/useDeployments'
 
 type DeploymentRowProps = {
   deployment: Deployment
@@ -19,6 +20,12 @@ export default function DeploymentRow({
     deployment.status === 'pending' ||
     deployment.status === 'building' ||
     deployment.status === 'deploying'
+
+  const logsQuery = useDeploymentLogs(deployment.id, expanded)
+  const deploymentWithLogs: Deployment = {
+    ...deployment,
+    logs: logsQuery.data ?? deployment.logs,
+  }
 
   return (
     <article className="demo-list-item overflow-hidden transition-colors hover:border-[color-mix(in_oklab,var(--lagoon-deep)_28%,var(--line))]">
@@ -73,7 +80,7 @@ export default function DeploymentRow({
       </button>
 
       {expanded ? (
-        <LogStream deployment={deployment} streaming={isActive} />
+        <LogStream deployment={deploymentWithLogs} streaming={isActive} />
       ) : null}
     </article>
   )

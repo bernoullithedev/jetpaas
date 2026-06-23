@@ -12,6 +12,7 @@ export const env = createEnv({
     REDIS_PORT: z.coerce.number(),
     REDIS_PASSWORD: z.string().min(1),
     CORS_ORIGIN: z.string().url().default("http://localhost:3000"),
+    SQLITE_PATH: z.string().min(1).default("./data/jetpaas.db"),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
