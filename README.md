@@ -38,11 +38,6 @@ pnpm dev
 docker compose up --build
 ```
 
-## Docs
-
-- [`TODO.md`](./TODO.md) — learning roadmap (beginner → intermediate)
-- [`docs/IMPROVEMENTS.md`](./docs/IMPROVEMENTS.md) — recent fixes and why they matter
-
 ## Assignment reference
 
 Hard requirements from the Brimble brief:

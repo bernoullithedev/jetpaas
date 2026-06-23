@@ -145,8 +145,5 @@ export function createApp({ deployQueue }: CreateAppOptions): express.Applicatio
 
   app.post("/api/deployments", createDeploymentHandler);
 
-  // Temporary alias while older clients migrate to /api/deployments.
-  app.post("/deploy", createDeploymentHandler);
-
   return app;
 }
