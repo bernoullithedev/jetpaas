@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { env } from "./env.js";
-import type { DeploymentRecord, DeploymentRow } from "./types.js";
+import type { DeploymentRecord, DeploymentRow, DeploymentStatus } from "./types.js";
 import { deploymentRecordSchema, deploymentSourceSchema } from "./types.js";
 
 let db: DatabaseSync | null = null;
@@ -92,6 +92,18 @@ export function insertDeployment(deployment: DeploymentRecord): void {
     );
 }
 
+export function updateDeploymentStatus(id: string, status: DeploymentStatus): void {
+  const deployment = getDeploymentById(id);
+  if (!deployment) {
+    throw new Error(`Deployment ${id} not found`);
+  }
+  const connection = initDatabase();
+  connection
+    .prepare(
+      `UPDATE deployments SET status = ? WHERE id = ?`,
+    )
+    .run(status, id);
+}
 export function getDeploymentById(id: string): DeploymentRecord | null {
   const connection = initDatabase();
   const row = connection

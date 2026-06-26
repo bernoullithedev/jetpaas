@@ -25,13 +25,30 @@ export default function DeploymentForm({ onSubmit }: DeploymentFormProps) {
     }
 
     if (!fileName) return
+
     onSubmit({ type: 'upload', filename: fileName })
     setFileName(null)
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
-    setFileName(file?.name ?? null)
+    if (!file) return
+    setFileName(file.name)
+
+    const formData = new FormData()
+    formData.append('repo_zip', file)
+
+    fetch(`http://localhost:4000/api/deployments/upload`, {
+      method: 'POST',
+      body: formData,
+    }).then(response => response.json()).then(data => {
+      console.log(data)
+    }).catch(error => {
+      console.error('Error creating deployment from upload', error)
+    })
+
+    // onSubmit({ type: 'upload', filename: file.name })
+    setFileName(null)
   }
 
   const canSubmit =

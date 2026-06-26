@@ -8,6 +8,7 @@ export const deploymentStatusSchema = z.enum([
   "failed",
 ]);
 
+export type DeploymentStatus = z.infer<typeof deploymentStatusSchema>;
 export const deploymentSourceSchema = z.union([
   z.object({ type: z.literal("git"), url: z.string().url() }),
   z.object({ type: z.literal("upload"), filename: z.string().min(1) }),
