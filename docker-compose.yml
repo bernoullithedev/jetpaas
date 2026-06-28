@@ -41,8 +41,10 @@ services:
       REDIS_PASSWORD: jetpaas-dev
       CORS_ORIGIN: http://localhost:3000
       SQLITE_PATH: /app/data/jetpaas.db
+      WORKSPACES_DIR: /app/workspaces
     volumes:
       - server-data:/app/data
+      - workspaces-data:/app/workspaces
     depends_on:
       redis:
         condition: service_healthy
@@ -58,6 +60,28 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    command: ["node", "apps/server/dist/worker.js"]
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: jetpaas-dev
+      SQLITE_PATH: /app/data/jetpaas.db
+      WORKSPACES_DIR: /app/workspaces
+    volumes:
+      - server-data:/app/data
+      - workspaces-data:/app/workspaces
+    depends_on:
+      redis:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    restart: on-failure
 
   web:
     build:
@@ -79,3 +103,4 @@ services:
 volumes:
   redis-data:
   server-data:
+  workspaces-data:

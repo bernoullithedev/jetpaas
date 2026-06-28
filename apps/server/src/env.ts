@@ -13,6 +13,8 @@ export const env = createEnv({
     REDIS_PASSWORD: z.string().min(1),
     CORS_ORIGIN: z.string().url().default("http://localhost:3000"),
     SQLITE_PATH: z.string().min(1).default("./data/jetpaas.db"),
+    WORKSPACES_DIR: z.string().min(1).default("./workspaces"),
+    MAX_FAILURE_LOG_LINES: z.coerce.number().int().positive().default(100),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

@@ -16,6 +16,7 @@ import {
 import { env } from "./env.js";
 import type { DeploymentRecord } from "./types.js";
 import { createDeploymentSchema } from "./types.js";
+import { broadcastDeploymentSnapshot, registerSseClient } from "./sse.js";
 
 type CreateAppOptions = {
   deployQueue: Pick<Queue, "add">;
@@ -145,9 +146,10 @@ return;
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders?.();
 
+    registerSseClient(res);
+
     const sendSnapshot = () => {
-      const deployments = listDeployments();
-      res.write(`event: snapshot\ndata: ${JSON.stringify({ deployments })}\n\n`);
+      broadcastDeploymentSnapshot();
     };
 
     sendSnapshot();

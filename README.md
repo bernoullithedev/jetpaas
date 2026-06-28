@@ -11,6 +11,7 @@ This repo is for learning — not a job submission.
 | Monorepo (pnpm + Turbo) | Done |
 | Web UI (Vite + TanStack Start/Router) | Scaffolded — deployment dashboard |
 | API server (Express + BullMQ + Redis) | Partial — create/list deployments, SSE snapshots |
+| BullMQ worker | Partial — git clone + status pipeline; Railpack/Docker stubbed |
 | Railpack builds | Not started |
 | Docker runtime for user apps | Not started |
 | Caddy reverse proxy | Not started |
@@ -27,6 +28,9 @@ cp apps/server/.env.example apps/server/.env   # if needed
 cp apps/web/.env.example apps/web/.env         # if needed
 pnpm install
 pnpm dev
+
+# Terminal 3 — worker (processes pending deployments)
+pnpm --filter @jetpaas/server dev:worker
 ```
 
 - Web: http://localhost:3000

@@ -99,10 +99,34 @@ export function updateDeploymentStatus(id: string, status: DeploymentStatus): vo
   }
   const connection = initDatabase();
   connection
-    .prepare(
-      `UPDATE deployments SET status = ? WHERE id = ?`,
-    )
+    .prepare(`UPDATE deployments SET status = ? WHERE id = ?`)
     .run(status, id);
+}
+
+export function markDeploymentFailed(id: string): void {
+  updateDeploymentStatus(id, "failed");
+}
+
+export function trimDeploymentLogs(deploymentId: string, maxLines: number): void {
+  const connection = initDatabase();
+  const rows = connection
+    .prepare(
+      `SELECT id
+       FROM deployment_logs
+       WHERE deploymentId = ?
+       ORDER BY createdAt DESC`,
+    )
+    .all(deploymentId) as Array<{ id: string }>;
+
+  const staleLogIds = rows.slice(maxLines).map((row) => row.id);
+  if (staleLogIds.length === 0) {
+    return;
+  }
+
+  const placeholders = staleLogIds.map(() => "?").join(", ");
+  connection
+    .prepare(`DELETE FROM deployment_logs WHERE id IN (${placeholders})`)
+    .run(...staleLogIds);
 }
 export function getDeploymentById(id: string): DeploymentRecord | null {
   const connection = initDatabase();
@@ -155,7 +179,7 @@ export function getDeploymentLogs(deploymentId: string): string[] {
       `SELECT content
        FROM deployment_logs
        WHERE deploymentId = ?
-       ORDER BY createdAt ASC`,
+       ORDER BY createdAt DESC`,
     )
     .all(deploymentId) as Array<{ content: string }>;
 
