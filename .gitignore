@@ -39,3 +39,5 @@ db.sqlite
 
 TODO.md
 docs/IMPROVEMENTS.md
+
+apps/server/repo/*
